@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>BAKIŞ — Baktığın büyür, bakmadığın avlanır</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:#04050a;color:#e6ecf7;touch-action:none;overflow:hidden;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent
+}
+#wrap{position:relative;width:min(100vw,960px,calc(100vh * 1.818));aspect-ratio:960/528}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;border-radius:12px;background:#07080d;cursor:crosshair;touch-action:none}
+.layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:12px}
+.hidden{display:none!important}
+#hud{pointer-events:none;align-items:stretch;justify-content:flex-start;flex-direction:column}
+.bar{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 14px;gap:10px}
+.chip{background:rgba(8,10,18,.72);border:1px solid rgba(140,170,255,.18);border-radius:9px;padding:7px 11px;font-size:13px;letter-spacing:.3px;backdrop-filter:blur(6px);white-space:nowrap}
+.chip b{color:#7fe7ff;font-weight:700}
+.chip.warn b{color:#ff8a9b}
+.bottombar{margin-top:auto;padding:0 14px 12px;display:flex;justify-content:center}
+.hint{font-size:12px;color:#8b97b4;background:rgba(8,10,18,.6);border:1px solid rgba(140,170,255,.12);padding:6px 12px;border-radius:99px}
+.panel{background:linear-gradient(180deg,rgba(13,16,28,.97),rgba(8,10,18,.97));border:1px solid rgba(140,170,255,.22);border-radius:16px;padding:26px 30px;text-align:center;max-width:560px;width:calc(100% - 32px);box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.logo{font-size:52px;font-weight:900;letter-spacing:14px;background:linear-gradient(90deg,#7fe7ff,#a5b4ff 55%,#ffd28a);-webkit-background-clip:text;background-clip:text;color:transparent;margin-left:14px}
+.sub{margin-top:8px;font-size:15px;color:#9fb0d0;line-height:1.5}
+.tag{display:inline-block;margin-top:14px;font-size:12.5px;color:#7fe7ff;border:1px dashed rgba(127,231,255,.45);padding:6px 12px;border-radius:99px}
+h2{font-size:24px;letter-spacing:2px;margin-bottom:6px}
+.rows{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+button{font:inherit;cursor:pointer;border:none;border-radius:10px;padding:12px 22px;font-size:15px;font-weight:700;letter-spacing:.5px;transition:transform .1s,filter .15s,box-shadow .15s}
+button:active{transform:translateY(1px)}
+.btn-p{background:linear-gradient(180deg,#39d0ff,#1f8fe0);color:#04121d;box-shadow:0 8px 24px rgba(45,170,255,.35)}
+.btn-p:hover{filter:brightness(1.1)}
+.btn-s{background:rgba(255,255,255,.07);color:#d7e2f5;border:1px solid rgba(160,190,255,.25)}
+.btn-s:hover{background:rgba(255,255,255,.13)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+.lv{background:rgba(255,255,255,.06);border:1px solid rgba(160,190,255,.2);border-radius:11px;padding:12px 6px;color:#e6ecf7;display:flex;flex-direction:column;gap:5px;align-items:center}
+.lv:hover:not(:disabled){background:rgba(127,231,255,.14);border-color:rgba(127,231,255,.5)}
+.lv:disabled{opacity:.34;cursor:not-allowed}
+.lv .n{font-size:19px;font-weight:800}
+.lv .s{font-size:12px;letter-spacing:2px;color:#ffcf7a}
+.note{margin-top:16px;font-size:12.5px;color:#7f8caa;line-height:1.6}
+.stars{font-size:30px;letter-spacing:8px;color:#ffcf7a;margin:8px 0 2px}
+.stat{display:flex;gap:18px;justify-content:center;margin-top:10px;font-size:13.5px;color:#9fb0d0;flex-wrap:wrap}
+.stat b{color:#e6ecf7}
+.fade{animation:fi .35s ease both}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="c"></canvas>
+
+  <div id="hud" class="layer hidden">
+    <div class="bar">
+      <div class="chip" id="lvChip">BÖLÜM <b>1</b> · <span id="lvName">İLK BAKIŞ</span></div>
+      <div class="chip" id="cryChip">KRISTAL <b>0/3</b></div>
+      <div class="chip warn" id="shChip">GÖLGE <b>0</b></div>
+      <div class="chip" id="tChip">SÜRE <b>0.0</b></div>
+    </div>
+    <div class="bottombar"><div class="hint">Fare / parmak ile ışığı yönlendir · Kristaller ışıkta büyür, yarım kalırsa karanlıkta söner · Gölgeler karanlıkta hızlanır, ışıkta yavaşlar ve erir · Temas ederlerse ölürsün · <b>P</b> duraklat</div></div>
+  </div>
+
+  <div id="menu" class="layer">
+    <div class="panel fade">
+      <div class="logo">BAKIŞ</div>
+      <div class="sub">Karanlık bir odada tek bir ışığın var.<br>Baktığın şey büyür. Bakmadığın şey sana gelir.</div>
+      <div class="tag">Baktığın büyür, bakmadığın avlanır.</div>
+      <div class="rows">
+        <button class="btn-p" id="btnPlay">OYNA</button>
+        <button class="btn-s" id="btnLevels">SEVİYELER</button>
+        <button class="btn-s" id="btnReset">İLERLEMEYİ SIFIRLA</button>
+      </div>
+      <div class="note">Tek oyunculu · Tarayıcıda çalışır · Klavye gerekmez<br>8 bölüm · Yıldız derecelendirmesi · İlerleme otomatik kaydedilir</div>
+    </div>
+  </div>
+
+  <div id="levels" class="layer hidden">
+    <div class="panel fade">
+      <h2>SEVİYELER</h2>
+      <div class="sub">Bir bölüm seç</div>
+      <div class="grid" id="lvGrid"></div>
+      <div class="rows"><button class="btn-s" id="btnBack">GERİ</button></div>
+    </div>
+  </div>
+
+  <div id="result" class="layer hidden">
+    <div class="panel fade">
+      <h2 id="rTitle">BÖLÜM TAMAM</h2>
+      <div class="stars" id="rStars">★★★</div>
+      <div class="stat">
+        <div>Süre: <b id="rTime">0.0s</b></div>
+        <div>Ölüm: <b id="rDeaths">0</b></div>
+        <div>Rekor: <b id="rBest">—</b></div>
+      </div>
+      <div class="rows">
+        <button class="btn-p" id="btnNext">SONRAKİ</button>
+        <button class="btn-s" id="btnRetry">TEKRAR</button>
+        <button class="btn-s" id="btnMenu">MENÜ</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pause" class="layer hidden">
+    <div class="panel fade">
+      <h2>DURAKLADI</h2>
+      <div class="sub">Nefes al. Işık seni bekliyor.</div>
+      <div class="rows">
+        <button class="btn-p" id="btnResume">DEVAM ET</button>
+        <button class="btn-s" id="btnPauseRetry">BAŞTAN</button>
+        <button class="btn-s" id="btnPauseMenu">MENÜ</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
