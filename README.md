@@ -9,6 +9,8 @@
 tuttuğu her şey büyür, ışıktan mahrum kalan her şey sana doğru süzülür —
 ne çok uzun bak ne de hiç bakma.
 
+🌐 **Canlı oyna:** https://retronyym.github.io/bakis/
+
 ## Oynanış
 
 - **Fare / dokunmatik** ile ışığı yönlendir (ışık yarıçapı sabit, hız sabit)
